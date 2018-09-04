@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.graphics.Color
 import android.os.Bundle
 import android.support.v4.content.LocalBroadcastManager
 import android.support.v4.view.GravityCompat
@@ -30,13 +31,22 @@ class MainActivity : AppCompatActivity() {
         drawer_layout.addDrawerListener(toggle)
         toggle.syncState()
 
+        userNameNavHeader.text = userNameNavHeader.text
+        userEmailNavHeader.text =  userEmailNavHeader.text
+        loginButtonNavHeader.text = loginButtonNavHeader.text
+        val resourceId = resources.getIdentifier("profiledefault", "drawable", packageName)
+        userImageNavHeader.setImageResource(resourceId)
+        userImageNavHeader.setBackgroundColor(Color.WHITE)
+        loginButtonNavHeader.text = loginButtonNavHeader.text
+
+        //
+
         LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
     }
 
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
-            val act = intent?.action
             if (AuthService.isLoggedIn) {
                 userNameNavHeader.text = UserDataService.name
                 userEmailNavHeader.text = UserDataService.email
