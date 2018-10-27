@@ -11,6 +11,21 @@ object UserDataService {
     var email = ""
     var name = ""
 
+
+    fun logout() {
+
+        var id = ""
+        var avatarColor = ""
+        var avatarName = ""
+        var email = ""
+        var name = ""
+
+        AuthService.userEmail = ""
+        AuthService.authToken = ""
+        AuthService.isLoggedIn = false
+
+    }
+
     fun returnAvatarColor(components: String) : Int {
 
         val strippedColor = components.replace("[", "").replace("]", "").replace(",", "")
