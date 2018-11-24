@@ -18,11 +18,15 @@ import com.antoniosj.stormchat.R
 import com.antoniosj.stormchat.services.AuthService
 import com.antoniosj.stormchat.services.UserDataService
 import com.antoniosj.stormchat.utilities.BROADCAST_USER_DATA_CHANGE
+import com.antoniosj.stormchat.utilities.SOCKET_URL
+import io.socket.client.IO
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
+
+    val socket = IO.socket(SOCKET_URL)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -44,9 +48,24 @@ class MainActivity : AppCompatActivity() {
         userImageNavHeader.setBackgroundColor(Color.WHITE)
         loginButtonNavHeader.text = loginButtonNavHeader.text
 
-        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
+
     }
 
+    override fun onResume() {
+        super.onResume()
+        LocalBroadcastManager.getInstance(this).registerReceiver(userDataChangeReceiver, IntentFilter(BROADCAST_USER_DATA_CHANGE))
+        socket.connect()
+    }
+
+    override fun onPause() {
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(userDataChangeReceiver)
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        socket.disconnect()
+        super.onDestroy()
+    }
 
     private val userDataChangeReceiver = object: BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -98,11 +117,10 @@ class MainActivity : AppCompatActivity() {
                 val channelName = nameTextField.text.toString()
                 val channelDesc = descTextField.text.toString()
 
-                hideKeyboard()
+                socket.emit("newChannel", channelName, channelDesc)
 
             }.setNegativeButton("Cancel") { dialogInterface, i ->
 
-                hideKeyboard()
             }.show()
         }
 
@@ -110,6 +128,7 @@ class MainActivity : AppCompatActivity() {
 
     fun sendMsgBtnClicked(view: View) {
 
+        hideKeyboard()
     }
 
     private fun hideKeyboard() {
