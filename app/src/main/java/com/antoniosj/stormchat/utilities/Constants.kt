@@ -8,3 +8,4 @@ const val URL_GET_USER = "${ BASE_URL}user/byEmail/"
 
 //broadcast constants.
 const val BROADCAST_USER_DATA_CHANGE = "BROADCAST_USER_DATA_CHANGE"
+
