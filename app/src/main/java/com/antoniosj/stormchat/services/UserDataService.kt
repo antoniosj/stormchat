@@ -1,6 +1,7 @@
 package com.antoniosj.stormchat.services
 
 import android.graphics.Color
+import com.antoniosj.stormchat.controller.App
 import java.util.*
 
 object UserDataService {
@@ -20,9 +21,9 @@ object UserDataService {
         var email = ""
         var name = ""
 
-        AuthService.userEmail = ""
-        AuthService.authToken = ""
-        AuthService.isLoggedIn = false
+        App.prefs.userEmail = ""
+        App.prefs.authToken = ""
+        App.prefs.isLoggedIn = false
 
     }
 
