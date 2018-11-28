@@ -7,12 +7,14 @@ import com.android.volley.toolbox.JsonArrayRequest
 import com.android.volley.toolbox.Volley
 import com.antoniosj.stormchat.controller.App
 import com.antoniosj.stormchat.model.Channel
+import com.antoniosj.stormchat.model.Message
 import com.antoniosj.stormchat.utilities.URL_GET_CHANNELS
 import org.json.JSONException
 
 object MessageService {
 
     val channels = ArrayList<Channel>()
+    val messages = ArrayList<Message>()
 
     fun getChannels(complete: (Boolean) -> Unit)  {
 
