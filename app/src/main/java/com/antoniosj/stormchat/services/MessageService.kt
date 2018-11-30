@@ -9,6 +9,7 @@ import com.antoniosj.stormchat.controller.App
 import com.antoniosj.stormchat.model.Channel
 import com.antoniosj.stormchat.model.Message
 import com.antoniosj.stormchat.utilities.URL_GET_CHANNELS
+import com.antoniosj.stormchat.utilities.URL_GET_MESSAGES
 import org.json.JSONException
 
 object MessageService {
@@ -16,7 +17,7 @@ object MessageService {
     val channels = ArrayList<Channel>()
     val messages = ArrayList<Message>()
 
-    fun getChannels(complete: (Boolean) -> Unit)  {
+    fun getChannels(complete: (Boolean) -> Unit) {
 
         val channelsRequest = object : JsonArrayRequest(Method.GET, URL_GET_CHANNELS, null, Response.Listener { response ->
 
@@ -40,7 +41,8 @@ object MessageService {
             }
         }, Response.ErrorListener {
 
-            error -> Log.d("ERROR", "Could not retrieve channels")
+            error ->
+            Log.d("ERROR", "Could not retrieve channels")
             complete(false)
         }) {
             override fun getBodyContentType(): String {
@@ -54,5 +56,59 @@ object MessageService {
             }
         }
         App.prefs.requestQueue.add(channelsRequest)
+    }
+
+    fun getMessages(channelId: String, complete: (Boolean) -> Unit) {
+
+        val url = "$URL_GET_MESSAGES$channelId"
+
+        val messageRequest = object : JsonArrayRequest(Method.GET, url, null, Response.Listener { response ->
+
+            clearMessages()
+            try {
+
+                for (x in 0 until response.length()) {
+                    val message = response.getJSONObject(x)
+                    val messageBody = message.getString("messageBody")
+                    val channelId = message.getString("channelId")
+                    val id = message.getString("_id")
+                    val userName = message.getString("userName")
+                    val userAvatar = message.getString("userAvatar")
+                    val userAvatarColor = message.getString("userAvatarColor")
+                    val timeStamp = message.getString("timeStamp")
+
+                    val newMessage = Message(messageBody, userName, channelId, userAvatar, userAvatarColor, id, timeStamp)
+                    this.messages.add(newMessage)
+                    complete(true)
+                }
+            } catch (e: JSONException) {
+                Log.d("ERROR", "Could not retrieve channels")
+                complete(false)
+            }
+
+        }, Response.ErrorListener { error ->
+            Log.d("ERROR", "Could not retrieve channels")
+            complete(false)
+        }) {
+            override fun getBodyContentType(): String {
+                return "application/json; charset=utf-8"
+            }
+
+            override fun getHeaders(): MutableMap<String, String> {
+                val headers = HashMap<String, String>()
+                headers.put("Authorization", "Bearer ${App.prefs.authToken}")
+                return headers
+            }
+        }
+        App.prefs.requestQueue.add(messageRequest)
+    }
+
+
+    fun clearMessages() {
+        messages.clear()
+    }
+
+    fun clearChannels() {
+        channels.clear()
     }
 }
