@@ -11,11 +11,13 @@ import android.support.v4.view.GravityCompat
 import android.support.v7.app.ActionBarDrawerToggle
 import android.support.v7.app.AlertDialog
 import android.support.v7.app.AppCompatActivity
+import android.support.v7.widget.LinearLayoutManager
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
 import android.widget.EditText
 import com.antoniosj.stormchat.R
+import com.antoniosj.stormchat.adapter.MessageAdapter
 import com.antoniosj.stormchat.model.Channel
 import com.antoniosj.stormchat.model.Message
 import com.antoniosj.stormchat.services.AuthService
@@ -28,17 +30,25 @@ import io.socket.emitter.Emitter
 import kotlinx.android.synthetic.main.activity_main.*
 import kotlinx.android.synthetic.main.app_bar_main.*
 import kotlinx.android.synthetic.main.content_main.*
+import kotlinx.android.synthetic.main.message_list_view.*
 import kotlinx.android.synthetic.main.nav_header_main.*
 
 class MainActivity : AppCompatActivity() {
 
     val socket = IO.socket(SOCKET_URL)
     lateinit var channelAdapter: ArrayAdapter<Channel>
+    lateinit var messageAdapter: MessageAdapter
     var selectedChannel: Channel? = null
+
 
     private fun setupAdapters() {
         channelAdapter = ArrayAdapter(this, android.R.layout.simple_list_item_1, MessageService.channels)
         channel_list.adapter = channelAdapter
+
+        messageAdapter = MessageAdapter(this, MessageService.messages)
+        messageRecyclerView.adapter = messageAdapter
+        val layoutManager = LinearLayoutManager(this)
+        messageRecyclerView.layoutManager = layoutManager
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -120,9 +130,9 @@ class MainActivity : AppCompatActivity() {
         if (selectedChannel != null) {
             MessageService.getMessages(selectedChannel!!.id) {
                 complete -> if (complete) {
-
-                    for (message in MessageService.messages) {
-                        // implement here 
+                    messageAdapter.notifyDataSetChanged()
+                    if (messageAdapter.itemCount > 0) {
+                        messageRecyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
                     }
                 }
             }
@@ -172,6 +182,8 @@ class MainActivity : AppCompatActivity() {
 
                     val newMessage = Message(messageBody, userName, channelId, userAvatar, userAvatarColor, id, timeStamp)
                     MessageService.messages.add(newMessage)
+                    messageAdapter.notifyDataSetChanged()
+                    messageRecyclerView.smoothScrollToPosition(messageAdapter.itemCount - 1)
                 }
             }
         }
@@ -182,6 +194,8 @@ class MainActivity : AppCompatActivity() {
         if (App.prefs.isLoggedIn) {
 
             UserDataService.logout()
+            channelAdapter.notifyDataSetChanged()
+            messageAdapter.notifyDataSetChanged()
             userNameNavHeader.text = "Your Name"
             userEmailNavHeader.text = "youremail@domain.com"
             userImageNavHeader.setImageResource(R.drawable.profiledefault)
